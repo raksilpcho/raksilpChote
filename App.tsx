@@ -1,118 +1,148 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
   Text,
-  useColorScheme,
-  View,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack'
+import { Provider } from 'react-redux';
+import Store from './src/redux/store';
+import { navigationRef, navigationStack } from './src/navigation/rootNavigation';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// MainScreen
+import MainScreen from './src/screens/MainScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+// Authentication Screen
+import SignIn from './src/screens/auth/SignIn'
+import PasscodeScreen from './src/screens/auth/PasscodeScreen'
+import OTPScreen from './src/screens/auth/OTPScreen';
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+// WithDraw Screen
+import Main from './src/screens/withdraw/Main'
+import WithDraw from './src/screens/withdraw/WithDraw'
+import Setting from './src/screens/withdraw/Setting'
+
+
+
+
+
+
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator()
+
+const BottomStack = (param : any) => {
+  const screen = param.route?.params?.screen ?? "Main"
+  let keyOffset = -100
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+    <KeyboardAvoidingView
+      // behavior={Platform.OS === 'ios' ? 'null' : 'height'}
+      behavior='height'
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={keyOffset}
+    >
+      <Tab.Navigator
+        initialRouteName={screen}
+        screenOptions={({ route, navigation }) => ({
+          headerShown: false,
+          gestureEnabled: true,
+          cardOverlayEnabled: true,
+          ...TransitionPresets.SlideFromRightIOS,
+          tabBarStyle: {
+            height: Platform.OS === 'ios' ? 100 : "10%",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "red"
+          }
+        })}
+
+      >
+        <Tab.Screen
+          name={'Main'}
+          component={Main}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TouchableOpacity style={{ justifyContent: "center", alignItems: "center", flex: 1 }} onPress={() => navigationStack('Main')}>
+                <Text style={{ color: focused ? 'black' : '#C2C2C2', marginBottom: 5, lineHeight: 20, fontSize: 12, fontWeight: "400" }}>Main</Text>
+              </TouchableOpacity>
+            ),
+            tabBarLabelStyle: {
+              fontSize: 12,
+              marginBottom: 16,
+              display: 'none'
+            },
+
+            tabBarStyle: { display: 'flex' }
+          }}
+        />
+        <Tab.Screen
+          name={'WithDraw'}
+          component={WithDraw}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TouchableOpacity style={{ justifyContent: "center", alignItems: "center" }} onPress={() => navigationStack('WithDraw')}>
+                <Text style={{ color: focused ? 'black' : '#C2C2C2', marginBottom: 5, lineHeight: 20, fontSize: 12, fontWeight: "400" }}>WithDraw</Text>
+              </TouchableOpacity>
+            ),
+            tabBarLabelStyle: {
+              fontSize: 12,
+              marginBottom: 16,
+              display: 'none'
+            },
+
+            tabBarStyle: { display: 'flex' }
+          }}
+        />
+
+        <Tab.Screen
+          name={'Setting'}
+          component={Setting}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TouchableOpacity style={{ justifyContent: "center", alignItems: "center" }} onPress={() => navigationStack('Setting')}>
+                <Text style={{ color: focused ? 'black' : '#C2C2C2', marginBottom: 5, lineHeight: 20, fontSize: 12, fontWeight: "400" }}>Setting</Text>
+              </TouchableOpacity>
+            ),
+            tabBarLabelStyle: {
+              fontSize: 12,
+              marginBottom: 16,
+              display: 'none'
+            },
+
+            tabBarStyle: { display: 'flex' }
+          }}
+        />
+
+      </Tab.Navigator>
+
+    </KeyboardAvoidingView>
+
+  )
 }
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Provider store={Store}>
+      <NavigationContainer ref={navigationRef} >
+        <Stack.Navigator initialRouteName="MainScreen"
+          screenOptions={({ route, navigation }) => ({
+            headerShown: false,
+            gestureEnabled: false,
+            cardOverlayEnabled: true,
+          })}
+        >
+          <Stack.Screen name="MainScreen" component={MainScreen} />
+          <Stack.Screen name="OTPScreen" component={OTPScreen} />
+          <Stack.Screen name="PasscodeScreen" component={PasscodeScreen} />
+          <Stack.Screen name="SignIn" component={SignIn} />
+          <Stack.Screen name="TabHome" component={BottomStack} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
